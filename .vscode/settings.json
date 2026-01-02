@@ -1,0 +1,7 @@
+{
+    "dotnet.defaultSolution": "yogan-api.sln",
+    "cSpell.words": [
+        "Ollama",
+        "qdrant"
+    ]
+}
