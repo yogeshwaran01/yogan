@@ -44,16 +44,24 @@ namespace API.Rag
             var queryVector = await embeddingGenerator.GenerateEmbeddingAsync(prompt);
 
             var docs = await vectorDB.SearchAsync(collection, queryVector, 3);
-
             var context = string.Join("\n", docs);
-
-            var fullPrompt = $@"
+            System.Console.WriteLine(context);
+            string fullPrompt;
+            if (context != string.Empty)
+            {
+                fullPrompt = $@"
             Use the following context to answer the question.
             CONTEXT:
             {context}
             
             QUESTION: 
             {prompt}";
+
+            }
+            else
+            {
+                fullPrompt = prompt;
+            }
 
             IAIClient aIClient = aIclientFactory.CreateClient("llama");
 

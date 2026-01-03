@@ -1,5 +1,6 @@
 using API.AIClient;
 using API.AIClient.Ollama;
+using API.AIClient.Ollama.Tools;
 using API.Rag;
 using API.Rag.EmbeddingGenerator;
 using API.Rag.EmbeddingGenerator.Ollama;
@@ -18,12 +19,17 @@ builder.Services.AddScoped<IEmbeddingGenerator, OllamaEmbeddingGenerator>();
 builder.Services.AddScoped<IVectorDB, QdrantVectorDB>();
 builder.Services.AddScoped<RagService>();
 builder.Services.AddControllers();
+builder.Services.AddSingleton<WeatherTool>();
+builder.Services.AddSingleton<TimeTool>();
+builder.Services.AddSingleton<IToolFactory, ToolFactory>();
 builder.Services.AddSingleton<IOllamaApiClient>(sp =>
 {
     var baseurl = builder.Configuration["AI:Ollama:BaseUrl"];
     var client = new OllamaApiClient(baseurl);
     return client;
 });
+
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
@@ -35,6 +41,8 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 app.MapControllers();
+
+app.Services.GetRequiredService<IToolFactory>().RegisterOllamaTools(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
