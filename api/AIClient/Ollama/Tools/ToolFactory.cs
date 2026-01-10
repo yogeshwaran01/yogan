@@ -35,7 +35,7 @@ namespace API.AIClient.Ollama.Tools
             ollamaTools.Add(tool);
         }
 
-        private Tool ToTool(IOllamaTool ollamaTool)
+        private static Tool ToTool(IOllamaTool ollamaTool)
         {
 
             return new Tool

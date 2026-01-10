@@ -14,19 +14,19 @@ namespace API.Rag.VectorDB.Qdrant
 
         public async Task<IEnumerable<string>> SearchAsync(string collection, float[] vector, int limit = 3)
         {
-            var results = await qdrantClient.SearchAsync(collection, vector, limit: (ulong)limit);
+            var results = await qdrantClient.SearchAsync(collection, vector, limit: (ulong)limit).ConfigureAwait(false);
             return results.Select(r => r.Payload["text"].ToString());
         }
 
         public async Task UpsertAsync(string collection, RagDocument document)
         {
-            if (!await qdrantClient.CollectionExistsAsync(collection))
+            if (!await qdrantClient.CollectionExistsAsync(collection).ConfigureAwait(false))
             {
                 await qdrantClient.CreateCollectionAsync(collection, new VectorParams
                 {
                     Size = 768,
                     Distance = Distance.Cosine,
-                });
+                }).ConfigureAwait(false);
             }
 
             var point = new PointStruct
@@ -38,7 +38,12 @@ namespace API.Rag.VectorDB.Qdrant
                  },
             };
 
-            await qdrantClient.UpsertAsync(collection, new List<PointStruct> { point });
+            await qdrantClient.UpsertAsync(collection, new List<PointStruct> { point }).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<string>> ListCollectionsAsync()
+        {
+             return await qdrantClient.ListCollectionsAsync().ConfigureAwait(false);
         }
     }
 }

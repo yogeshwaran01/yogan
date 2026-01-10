@@ -1,0 +1,37 @@
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--surface-ground);
+}
+
+.app-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    background-color: var(--surface-card);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.app-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.app-content {
+    flex: 1;
+    padding: 1rem;
+    overflow: hidden;
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}

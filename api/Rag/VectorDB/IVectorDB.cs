@@ -4,5 +4,6 @@ namespace API.Rag.VectorDB
     {
         Task UpsertAsync(string collection, RagDocument document);
         Task<IEnumerable<string>> SearchAsync(string collection, float[] vector, int limit = 3);
+        Task<IEnumerable<string>> ListCollectionsAsync();
     }
 }

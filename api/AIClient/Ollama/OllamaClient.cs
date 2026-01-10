@@ -9,7 +9,7 @@ namespace API.AIClient.Ollama
         /// <summary>
         /// ollama API client
         /// </summary>
-        private readonly IOllamaApiClient ollamaApi = null;
+        private readonly IOllamaApiClient ollamaApi;
         /// <summary>
         /// Constructor
         /// </summary>
@@ -26,6 +26,7 @@ namespace API.AIClient.Ollama
         /// <returns></returns>
         public async IAsyncEnumerable<AIClientResponse> GenerateAsync(AIClientParam aIClientParam, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            if (aIClientParam == null) { throw new ArgumentException("null Exception"); }
             ollamaApi.SelectedModel = aIClientParam.Model;
             var messages = new List<Message>
             {

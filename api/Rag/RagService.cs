@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using API.AIClient;
 using API.Rag.EmbeddingGenerator;
+using API.Rag.TextExtractor;
 using API.Rag.VectorDB;
 
 namespace API.Rag
@@ -13,41 +14,64 @@ namespace API.Rag
 
         private readonly IAIClientFactory aIclientFactory;
 
-        public RagService(IEmbeddingGenerator embedding, IVectorDB vector, IAIClientFactory ClientFactory)
+        private readonly IEnumerable<ITextExtractor> textExtractors;
+
+        public RagService(IEmbeddingGenerator embedding, IVectorDB vector, IAIClientFactory ClientFactory, IEnumerable<ITextExtractor> textExtractors)
         {
             embeddingGenerator = embedding;
             aIclientFactory = ClientFactory;
+            this.textExtractors = textExtractors;
             vectorDB = vector;
         }
 
-        public async Task AddMemoryAsync(string collection, string text)
+        public async Task AddMemoryAsync(AIClientParam aiClientParam)
         {
-            var chunks = ChunkText(text);
-
-            // int index = 0;
+            if (aiClientParam == null) { return; }
+            var chunks = ChunkText(aiClientParam.Context);
             foreach (var chunk in chunks)
             {
-                var vector = await embeddingGenerator.GenerateEmbeddingAsync(chunk);
+                var vector = await embeddingGenerator.GenerateEmbeddingAsync(chunk).ConfigureAwait(false);
 
-                await vectorDB.UpsertAsync(collection, new RagDocument
+                await vectorDB.UpsertAsync(aiClientParam.StoreName, new RagDocument
                 {
                     Id = Guid.NewGuid(),
                     Text = chunk,
                     Vector = vector,
-                });
+                }).ConfigureAwait(false);
             }
         }
 
-
-        public async IAsyncEnumerable<AIClientResponse> AskAsync(string collection, string prompt, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async Task AddMemoryFromFileAsync(AIClientParam aiClientParam)
         {
-            var queryVector = await embeddingGenerator.GenerateEmbeddingAsync(prompt);
+            if (aiClientParam == null) { return; }
+            var file = aiClientParam.FormFile;
+            using var stream = file.OpenReadStream();
+            var extractor = textExtractors.FirstOrDefault(e => e.IsQualified(file.ContentType)) ?? throw new NotSupportedException($"Unsupported content type: {file.ContentType}");
+            var text = await extractor.ExtractTextAsync(stream).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(text)) { return; }
+            var normalizePdfText = NormalizePdfText(text);
+            aiClientParam.Context = normalizePdfText;
+            await AddMemoryAsync(aiClientParam).ConfigureAwait(false);
+        }
 
-            var docs = await vectorDB.SearchAsync(collection, queryVector, 3);
-            var context = string.Join("\n", docs);
-            System.Console.WriteLine(context);
+        public async Task<IEnumerable<string>> GetStoresAsync()
+        {
+            return await vectorDB.ListCollectionsAsync().ConfigureAwait(false);
+        }
+
+
+        public async IAsyncEnumerable<AIClientResponse> AskAsync(AIClientParam param, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            if (param == null) { throw new ArgumentNullException(nameof(param)); }
+            var queryVector = await embeddingGenerator.GenerateEmbeddingAsync(param.Prompt).ConfigureAwait(false);
+            var context = string.Empty;
+            if (param.IsRagEnabled)
+            {
+                var docs = await vectorDB.SearchAsync(param.StoreName, queryVector, 3).ConfigureAwait(false);
+                context = string.Join("\n", docs);
+            }
             string fullPrompt;
-            if (context != string.Empty)
+            if (!string.IsNullOrEmpty(context))
             {
                 fullPrompt = $@"
             Use the following context to answer the question.
@@ -55,20 +79,18 @@ namespace API.Rag
             {context}
             
             QUESTION: 
-            {prompt}";
+            {param.Prompt}";
 
             }
             else
             {
-                fullPrompt = prompt;
+                fullPrompt = param.Prompt;
             }
-
-            IAIClient aIClient = aIclientFactory.CreateClient("llama");
-
+            IAIClient aIClient = aIclientFactory.CreateClient(param.Client);
             var streams = aIClient.GenerateAsync(new AIClientParam
             {
                 Prompt = fullPrompt,
-                Model = "llama3.1:8b"
+                Model = param.Model,
             }, cancellationToken);
 
             await foreach (var chunk in streams)
@@ -77,7 +99,7 @@ namespace API.Rag
             }
         }
 
-        private List<string> ChunkText(string text, int maxTokens = 512, int overlapTokens = 128)
+        private static List<string> ChunkText(string text, int maxTokens = 512)
         {
             var chunks = new List<string>();
             var sentences = Regex.Split(text, @"(?<=[.!?])\s+");
@@ -107,5 +129,12 @@ namespace API.Rag
             return chunks;
         }
 
+        private static string NormalizePdfText(string text)
+        {
+            return Regex
+                .Replace(text, @"\n{2,}", "\n")
+                .Replace("\r", "")
+                .Trim();
+        }
     }
 }

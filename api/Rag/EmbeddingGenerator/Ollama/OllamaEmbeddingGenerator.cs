@@ -16,7 +16,7 @@ namespace API.Rag.EmbeddingGenerator.Ollama
         public async Task<float[]> GenerateEmbeddingAsync(string text)
         {
             apiClient.SelectedModel = "nomic-embed-text";
-            var result = await apiClient.GenerateVectorAsync(text);
+            var result = await apiClient.GenerateVectorAsync(text).ConfigureAwait(false);
             return result.ToArray();
         }
     }

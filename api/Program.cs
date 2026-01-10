@@ -4,6 +4,7 @@ using API.AIClient.Ollama.Tools;
 using API.Rag;
 using API.Rag.EmbeddingGenerator;
 using API.Rag.EmbeddingGenerator.Ollama;
+using API.Rag.TextExtractor;
 using API.Rag.VectorDB;
 using API.Rag.VectorDB.Qdrant;
 using OllamaSharp;
@@ -22,6 +23,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<WeatherTool>();
 builder.Services.AddSingleton<TimeTool>();
 builder.Services.AddSingleton<IToolFactory, ToolFactory>();
+builder.Services.AddSingleton<ITextExtractor, PdfTextExtractor>();
 builder.Services.AddSingleton<IOllamaApiClient>(sp =>
 {
     var baseurl = builder.Configuration["AI:Ollama:BaseUrl"];
@@ -40,7 +42,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
-app.MapControllers();
+
+app.UseCors(x => x
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .SetIsOriginAllowed(origin => true) // allow any origin
+    .AllowCredentials()); // allow credentials
 
 app.Services.GetRequiredService<IToolFactory>().RegisterOllamaTools(app.Services);
 
@@ -55,6 +62,8 @@ if (app.Environment.IsDevelopment())
     });
     app.MapOpenApi();
 }
+
+app.MapControllers();
 
 app.UseHttpsRedirection();
 app.Run();

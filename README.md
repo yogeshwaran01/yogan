@@ -2,7 +2,7 @@
 
 - [x] Local LLM
 - [x] RAG Implementation (text Based)
-- [ ] UI Client
+- [x] UI Client
 - [ ] Tools Integration
 - [ ] Rag Implementation multiple file types
 - [ ] Chunking strategies
