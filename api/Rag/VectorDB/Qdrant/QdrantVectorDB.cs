@@ -9,7 +9,10 @@ namespace API.Rag.VectorDB.Qdrant
 
         public QdrantVectorDB(IConfiguration configuration)
         {
-            qdrantClient = new QdrantClient("localhost", 6334);
+            var qdrantConfig = configuration.GetSection("VectorDB:Qdrant");
+            var baseUrl = qdrantConfig["BaseUrl"];
+            var port = int.Parse(qdrantConfig["Port"]);
+            qdrantClient = new QdrantClient(baseUrl, port);
         }
 
         public async Task<IEnumerable<string>> SearchAsync(string collection, float[] vector, int limit = 3)
@@ -43,7 +46,7 @@ namespace API.Rag.VectorDB.Qdrant
 
         public async Task<IEnumerable<string>> ListCollectionsAsync()
         {
-             return await qdrantClient.ListCollectionsAsync().ConfigureAwait(false);
+            return await qdrantClient.ListCollectionsAsync().ConfigureAwait(false);
         }
     }
 }
