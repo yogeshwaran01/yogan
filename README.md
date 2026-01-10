@@ -17,20 +17,36 @@
 - Ollama
 - Qdrant
 
-### Build the .NET API
+### Manual Setup (Development)
 
-1. Navigate to the `api/` directory.
-2. Run the following command:
-   ```bash
-   dotnet run
-   ```
+**1. Ollama**
 
-### Run Qdrant
+```bash
+ollama pull llama3.1:8b
+```
+
+```bash
+ollama serve
+```
+
+**2. Run Qdrant**
 
 ```bash
 docker run -p 6333:6333 -p 6334:6334 \
     -v $(pwd)/qdrant_storage:/qdrant/storage:z \
     qdrant/qdrant
+```
+
+**3. Run API**
+
+```bash
+dotnet run --project API
+```
+
+**4. Run Client**
+
+```bash
+ng serve
 ```
 
 ## License
