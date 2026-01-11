@@ -8,6 +8,7 @@ export class StateService {
   readonly selectedModel = signal<string>('llama3.1:8b');
   readonly selectedStore = signal<string>('store');
   readonly selectedClient = signal<string>('google');
+  readonly systemPrompt = signal<string>('');
 
   // UI state
   readonly isSidebarVisible = signal<boolean>(false);
@@ -38,5 +39,9 @@ export class StateService {
 
   setClient(client: string) {
     this.selectedClient.set(client);
+  }
+
+  setSystemPrompt(prompt: string) {
+    this.systemPrompt.set(prompt);
   }
 }

@@ -28,12 +28,14 @@ namespace API.AIClient.Ollama
         {
             if (aIClientParam == null) { throw new ArgumentException("null Exception"); }
             ollamaApi.SelectedModel = aIClientParam.Model;
+            var systemPrompt = string.IsNullOrEmpty(aIClientParam.SystemPrompt) ? Prompts.Prompts.SystemPrompt : aIClientParam.SystemPrompt;
+            System.Console.WriteLine(systemPrompt);
             var messages = new List<Message>
             {
               new Message
               {
                   Role = "system",
-                  Content = Prompts.Prompts.SystemPrompt
+                  Content = systemPrompt
               },
               new Message
               {

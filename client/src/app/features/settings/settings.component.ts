@@ -47,7 +47,10 @@ import { StateService } from '../../core/services/state.service';
                   <small>{{ isRagEnabled ? 'Enabled (Context Retrieval)' : 'Disabled (Direct Chat)' }}</small>
               </div>
            </div>
-
+          <div class="field">
+              <label for="systemPrompt">System Prompt</label>
+                 <textarea id="systemPrompt" pInputTextarea [(ngModel)]="systemPrompt" rows="5" placeholder="Add the system Prompt" class="w-full" (ngModelChange)="updateSystemPrompt()"></textarea>
+          </div>
             <div class="field">
               <label for="client">AI Client</label>
               <p-dropdown
@@ -162,7 +165,7 @@ import { StateService } from '../../core/services/state.service';
   `]
 })
 export class SettingsComponent implements OnInit {
-  models = ['llama3.1:8b', 'gemma:2b', 'mistral']; // Could fetch from API if available
+  models = ['llama3.1:8b', 'gemma:2b', 'dolphin-mistral']; // Could fetch from API if available
   stores: string[] = [];
   clients = ['ollama', 'openai (Not Supported)', 'google', "ollamatool"]; // Example clients
 
@@ -174,6 +177,7 @@ export class SettingsComponent implements OnInit {
   selectedStore = this.stateService.selectedStore();
   isRagEnabled = this.stateService.isRagEnabled();
   selectedClient = this.stateService.selectedClient();
+  systemPrompt = this.stateService.systemPrompt();
 
   textContext = '';
   selectedFile: File | null = null;
@@ -212,6 +216,10 @@ export class SettingsComponent implements OnInit {
 
   updateRag() {
     this.stateService.setRagEnabled(this.isRagEnabled);
+  }
+
+  updateSystemPrompt() {
+    this.stateService.setSystemPrompt(this.systemPrompt);
   }
 
   addTextContext() {

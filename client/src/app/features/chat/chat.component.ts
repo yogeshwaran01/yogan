@@ -272,7 +272,8 @@ export class ChatComponent {
         Model: this.stateService.selectedModel(),
         Client: this.stateService.selectedClient(),
         StoreName: store,
-        IsRagEnabled: isRag
+        IsRagEnabled: isRag,
+        SystemPrompt: this.stateService.systemPrompt()
       };
 
       for await (const chunk of this.aiService.generateStream(param)) {

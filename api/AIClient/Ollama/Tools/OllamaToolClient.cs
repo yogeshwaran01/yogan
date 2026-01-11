@@ -18,7 +18,8 @@ namespace API.AIClient.Ollama
         public async IAsyncEnumerable<AIClientResponse> GenerateAsync(AIClientParam aIClientParam, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             ollamaApiClient.SelectedModel = aIClientParam.Model;
-            var chat = new Chat(ollamaApiClient, Prompts.Prompts.SystemPrompt);
+            var systemPrompt = string.IsNullOrEmpty(aIClientParam.SystemPrompt) ? Prompts.Prompts.SystemPrompt : aIClientParam.SystemPrompt;
+            var chat = new Chat(ollamaApiClient, systemPrompt);
             var stream = chat.SendAsync(aIClientParam.Prompt,
             tools:
             [

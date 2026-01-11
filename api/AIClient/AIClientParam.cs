@@ -7,6 +7,7 @@ namespace API.AIClient
     {
         public string Client { get; set; }
         public string Model { get; set; }
+        public string SystemPrompt { get; set; }
         public string Prompt { get; set; }
         public string Context { get; set; }
         public string StoreName { get; set; }

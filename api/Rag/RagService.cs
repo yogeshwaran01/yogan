@@ -89,6 +89,7 @@ namespace API.Rag
             IAIClient aIClient = aIclientFactory.CreateClient(param.Client);
             var streams = aIClient.GenerateAsync(new AIClientParam
             {
+                SystemPrompt = param.SystemPrompt,
                 Prompt = fullPrompt,
                 Model = param.Model,
             }, cancellationToken);
