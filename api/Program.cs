@@ -20,14 +20,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<OllamaClient>();
 builder.Services.AddScoped<GoogleClient>();
+builder.Services.AddScoped<OllamaToolClient>();
 builder.Services.AddScoped<IAIClientFactory, AIClientFactory>();
 builder.Services.AddScoped<IEmbeddingGenerator, OllamaEmbeddingGenerator>();
 builder.Services.AddScoped<IVectorDB, QdrantVectorDB>();
 builder.Services.AddScoped<RagService>();
 builder.Services.AddControllers();
-builder.Services.AddSingleton<WeatherTool>();
-builder.Services.AddSingleton<TimeTool>();
-builder.Services.AddSingleton<IToolFactory, ToolFactory>();
 builder.Services.AddSingleton<ITextExtractor, PdfTextExtractor>();
 builder.Services.AddSingleton<IOllamaApiClient>(sp =>
 {
@@ -59,7 +57,6 @@ app.UseCors(x => x
     .SetIsOriginAllowed(origin => true) // allow any origin
     .AllowCredentials()); // allow credentials
 
-app.Services.GetRequiredService<IToolFactory>().RegisterOllamaTools(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

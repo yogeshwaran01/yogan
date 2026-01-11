@@ -22,6 +22,10 @@ namespace API.AIClient
             {
                 return serviceProvider.GetRequiredService<GoogleClient>();
             }
+            if (providerName.ToLower() == "ollamatool")
+            {
+                return serviceProvider.GetRequiredService<OllamaToolClient>();
+            }
             return serviceProvider.GetRequiredService<OllamaClient>();
         }
     }

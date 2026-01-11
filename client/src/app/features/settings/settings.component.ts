@@ -164,7 +164,7 @@ import { StateService } from '../../core/services/state.service';
 export class SettingsComponent implements OnInit {
   models = ['llama3.1:8b', 'gemma:2b', 'mistral']; // Could fetch from API if available
   stores: string[] = [];
-  clients = ['ollama', 'openai (Not Supported)', 'google']; // Example clients
+  clients = ['ollama', 'openai (Not Supported)', 'google', "ollamatool"]; // Example clients
 
   private aiService = inject(AiService);
   private stateService = inject(StateService);

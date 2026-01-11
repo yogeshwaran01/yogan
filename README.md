@@ -1,11 +1,12 @@
 # Yogan (Personal AI Assistant)
 
 - [x] Local LLM
-- [x] RAG Implementation (text Based)
+- [x] RAG Implementation (text, Pdf)
 - [x] UI Client
-- [ ] Tools Integration
+- [x] Tools Integration (Basic)
 - [ ] Rag Implementation multiple file types
 - [ ] Chunking strategies
+- [ ] API based Tools Integration
 
 ## Build and Run Instructions
 
