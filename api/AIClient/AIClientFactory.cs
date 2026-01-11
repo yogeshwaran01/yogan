@@ -1,4 +1,6 @@
+using API.AIClient.Gemini;
 using API.AIClient.Ollama;
+using Google.GenAI;
 
 namespace API.AIClient
 {
@@ -16,6 +18,10 @@ namespace API.AIClient
         }
         public IAIClient CreateClient(string providerName)
         {
+            if (providerName.ToLower() == "google")
+            {
+                return serviceProvider.GetRequiredService<GoogleClient>();
+            }
             return serviceProvider.GetRequiredService<OllamaClient>();
         }
     }

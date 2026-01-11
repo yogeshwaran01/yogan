@@ -58,15 +58,8 @@ interface Message {
             </div>
           </div>
 
-          <div *ngIf="isGenerating()" class="message-item ai-message">
-             <div class="message-content">
-                <p-avatar icon="pi pi-android" shape="circle" styleClass="ai-avatar"></p-avatar>
-                <div class="text-bubble typing-indicator">
-                   <span>typing...</span>
-                </div>
-             </div>
-          </div>
-          
+
+
           <div #bottomAnchor></div>
         </div>
           </p-scrollPanel>
@@ -74,21 +67,21 @@ interface Message {
 
       <div class="input-area">
         <div class="input-wrapper">
-          <textarea 
-            pInputTextarea 
-            [autoResize]="true" 
-            [(ngModel)]="currentInput" 
+          <textarea
+            pInputTextarea
+            [autoResize]="true"
+            [(ngModel)]="currentInput"
             (keydown.enter)="sendMessage($event)"
-            placeholder="Type your message..." 
+            placeholder="Type your message..."
             rows="1"
             class="chat-input"
             [disabled]="isGenerating()"
           ></textarea>
-          <p-button 
-            icon="pi pi-send" 
-            [rounded]="true" 
-            [text]="true" 
-            (onClick)="sendMessage()" 
+          <p-button
+            icon="pi pi-send"
+            [rounded]="true"
+            [text]="true"
+            (onClick)="sendMessage()"
             [disabled]="!currentInput.trim() || isGenerating()"
           ></p-button>
         </div>
@@ -112,7 +105,7 @@ interface Message {
         background: var(--surface-50);
         border-bottom: 1px solid var(--surface-border);
         flex-shrink: 0;
-        
+
         .chat-title {
             font-weight: 600;
             color: var(--text-color);
@@ -121,7 +114,7 @@ interface Message {
 
     .chat-content {
         flex: 1;
-        overflow: hidden; 
+        overflow: hidden;
         position: relative;
     }
 
@@ -139,7 +132,7 @@ interface Message {
       justify-content: center;
       height: 400px;
       opacity: 0.7;
-      
+
       h3 {
         margin-top: 1rem;
         font-weight: 500;
@@ -153,7 +146,7 @@ interface Message {
 
     .user-message {
       justify-content: flex-end;
-      
+
       .message-content {
         flex-direction: row-reverse;
       }
@@ -218,7 +211,7 @@ interface Message {
       padding: 0.5rem 1rem;
       max-height: 120px;
       resize: none;
-      
+
       &:focus {
         box-shadow: none;
         outline: none;
@@ -229,7 +222,7 @@ interface Message {
       background-color: var(--teal-500);
       color: white;
     }
-    
+
     ::ng-deep .user-avatar {
       background-color: var(--indigo-500);
       color: white;
@@ -277,6 +270,7 @@ export class ChatComponent {
       const param = {
         Prompt: userMsg,
         Model: this.stateService.selectedModel(),
+        Client: this.stateService.selectedClient(),
         StoreName: store,
         IsRagEnabled: isRag
       };

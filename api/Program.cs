@@ -1,4 +1,5 @@
 using API.AIClient;
+using API.AIClient.Gemini;
 using API.AIClient.Ollama;
 using API.AIClient.Ollama.Tools;
 using API.Rag;
@@ -7,7 +8,10 @@ using API.Rag.EmbeddingGenerator.Ollama;
 using API.Rag.TextExtractor;
 using API.Rag.VectorDB;
 using API.Rag.VectorDB.Qdrant;
+using Google.GenAI;
 using OllamaSharp;
+
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<OllamaClient>();
+builder.Services.AddScoped<GoogleClient>();
 builder.Services.AddScoped<IAIClientFactory, AIClientFactory>();
 builder.Services.AddScoped<IEmbeddingGenerator, OllamaEmbeddingGenerator>();
 builder.Services.AddScoped<IVectorDB, QdrantVectorDB>();
@@ -31,7 +36,12 @@ builder.Services.AddSingleton<IOllamaApiClient>(sp =>
     return client;
 });
 
-
+builder.Services.AddSingleton<Client>(sp =>
+{
+    var apiKey = builder.Configuration["AI:Google:ApiKey"];
+    var client = new Client(apiKey: apiKey);
+    return client;
+});
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo

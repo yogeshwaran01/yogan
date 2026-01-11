@@ -36,7 +36,7 @@ import { StateService } from '../../core/services/state.service';
   template: `
     <div class="settings-container">
       <p-toast></p-toast>
-      
+
       <section class="config-section">
         <h3>Configuration</h3>
         <div class="form-grid">
@@ -48,24 +48,35 @@ import { StateService } from '../../core/services/state.service';
               </div>
            </div>
 
-           <div class="field">
-              <label for="model">Model</label>
-              <p-dropdown 
-                id="model" 
-                [options]="models" 
-                [(ngModel)]="selectedModel" 
-                (onChange)="updateModel()" 
+            <div class="field">
+              <label for="client">AI Client</label>
+              <p-dropdown
+                id="client"
+                [options]="clients"
+                [(ngModel)]="selectedClient"
+                (onChange)="updateClient()"
                 [style]="{'width':'100%'}"
               ></p-dropdown>
            </div>
-           
+
+           <div class="field">
+              <label for="model">Model</label>
+              <p-dropdown
+                id="model"
+                [options]="models"
+                [(ngModel)]="selectedModel"
+                (onChange)="updateModel()"
+                [style]="{'width':'100%'}"
+              ></p-dropdown>
+           </div>
+
            <div class="field" *ngIf="isRagEnabled">
               <label for="store">Collection / Store</label>
-              <p-dropdown 
-                [options]="stores" 
-                [(ngModel)]="selectedStore" 
-                (onChange)="updateStore()" 
-                [editable]="true" 
+              <p-dropdown
+                [options]="stores"
+                [(ngModel)]="selectedStore"
+                (onChange)="updateStore()"
+                [editable]="true"
                 placeholder="Select or create a store"
                 [style]="{'width':'100%'}"
               ></p-dropdown>
@@ -85,14 +96,14 @@ import { StateService } from '../../core/services/state.service';
                  <p-button label="Add to Memory" icon="pi pi-check" (onClick)="addTextContext()" [disabled]="!textContext" [loading]="isUploading"></p-button>
               </div>
            </p-tabPanel>
-           
+
            <p-tabPanel header="File (PDF)">
               <div class="flex flex-column gap-2">
-                 <p-fileUpload 
-                    mode="basic" 
-                    chooseLabel="Choose PDF" 
-                    accept=".pdf" 
-                    [maxFileSize]="10000000" 
+                 <p-fileUpload
+                    mode="basic"
+                    chooseLabel="Choose PDF"
+                    accept=".pdf"
+                    [maxFileSize]="10000000"
                     [auto]="false"
                     (onSelect)="onFileSelect($event)"
                     styleClass="w-full"
@@ -111,40 +122,40 @@ import { StateService } from '../../core/services/state.service';
       flex-direction: column;
       gap: 1.5rem;
     }
-    
+
     .config-section, .ingest-section {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
-    
+
     .form-grid {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
-    
+
     .field {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
     }
-    
+
     h3 {
       margin: 0;
       font-size: 1.1rem;
       color: var(--text-color-secondary);
     }
-    
+
     .w-full {
       width: 100%;
     }
-    
+
     .flex-column {
       display: flex;
       flex-direction: column;
     }
-    
+
     .gap-2 {
       gap: 0.5rem;
     }
@@ -153,6 +164,7 @@ import { StateService } from '../../core/services/state.service';
 export class SettingsComponent implements OnInit {
   models = ['llama3.1:8b', 'gemma:2b', 'mistral']; // Could fetch from API if available
   stores: string[] = [];
+  clients = ['ollama', 'openai (Not Supported)', 'google']; // Example clients
 
   private aiService = inject(AiService);
   private stateService = inject(StateService);
@@ -161,6 +173,7 @@ export class SettingsComponent implements OnInit {
   selectedModel = this.stateService.selectedModel();
   selectedStore = this.stateService.selectedStore();
   isRagEnabled = this.stateService.isRagEnabled();
+  selectedClient = this.stateService.selectedClient();
 
   textContext = '';
   selectedFile: File | null = null;
@@ -187,6 +200,10 @@ export class SettingsComponent implements OnInit {
 
   updateModel() {
     this.stateService.setModel(this.selectedModel);
+  }
+
+  updateClient() {
+    this.stateService.setClient(this.selectedClient);
   }
 
   updateStore() {
