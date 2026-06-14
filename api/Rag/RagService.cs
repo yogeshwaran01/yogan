@@ -92,6 +92,8 @@ namespace API.Rag
                 SystemPrompt = param.SystemPrompt,
                 Prompt = fullPrompt,
                 Model = param.Model,
+                History = param.History,
+                ConversationId = param.ConversationId
             }, cancellationToken);
 
             await foreach (var chunk in streams)

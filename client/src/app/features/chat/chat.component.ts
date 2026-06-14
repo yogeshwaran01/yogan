@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -57,8 +57,6 @@ interface Message {
               </div>
             </div>
           </div>
-
-
 
           <div #bottomAnchor></div>
         </div>
@@ -229,9 +227,10 @@ interface Message {
     }
   `]
 })
-export class ChatComponent {
+export class ChatComponent implements OnInit {
   messages: Message[] = [];
   currentInput = '';
+  conversationId = '';
 
   private aiService = inject(AiService);
   private stateService = inject(StateService);
@@ -240,6 +239,40 @@ export class ChatComponent {
   isGenerating = this.stateService.isLoading;
 
   @ViewChild('bottomAnchor') bottomAnchor!: ElementRef;
+
+  ngOnInit() {
+    this.conversationId = this.getOrGenerateConversationId();
+    this.loadHistory();
+  }
+
+  private getOrGenerateConversationId(): string {
+    let id = sessionStorage.getItem('yogan_conversation_id');
+    if (!id) {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        id = crypto.randomUUID();
+      } else {
+        id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      }
+      sessionStorage.setItem('yogan_conversation_id', id);
+    }
+    return id;
+  }
+
+  loadHistory() {
+    this.aiService.getHistory(this.conversationId).subscribe({
+      next: (history) => {
+        this.messages = history.map(h => ({
+          role: (h.role.toLowerCase() === 'model' || h.role.toLowerCase() === 'assistant') ? 'assistant' : 'user' as 'user' | 'assistant',
+          content: h.content
+        }));
+        this.scrollToBottom();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load chat history', err);
+      }
+    });
+  }
 
   async sendMessage(event?: Event) {
     if (event) {
@@ -262,7 +295,7 @@ export class ChatComponent {
       const store = this.stateService.selectedStore();
 
       if (isRag && !store) {
-        this.messages.push({ role: 'assistant', content: 'Please select a Store (Collection) in settings to use RAG mode, or disable RAG mode.' });
+        this.messages[aiMsgIndex].content = 'Please select a Store (Collection) in settings to use RAG mode, or disable RAG mode.';
         this.stateService.setLoading(false);
         return;
       }
@@ -273,7 +306,8 @@ export class ChatComponent {
         Client: this.stateService.selectedClient(),
         StoreName: store,
         IsRagEnabled: isRag,
-        SystemPrompt: this.stateService.systemPrompt()
+        SystemPrompt: this.stateService.systemPrompt(),
+        ConversationId: this.conversationId
       };
 
       for await (const chunk of this.aiService.generateStream(param)) {
@@ -296,6 +330,18 @@ export class ChatComponent {
   }
 
   clearChat() {
-    this.messages = [];
+    this.aiService.clearHistory(this.conversationId).subscribe({
+      next: () => {
+        this.messages = [];
+        this.scrollToBottom();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to clear history on server', err);
+        this.messages = []; // Fallback clear locally
+        this.scrollToBottom();
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

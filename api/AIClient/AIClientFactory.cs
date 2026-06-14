@@ -1,6 +1,7 @@
+using System;
+using Microsoft.Extensions.DependencyInjection;
 using API.AIClient.Gemini;
 using API.AIClient.Ollama;
-using Google.GenAI;
 
 namespace API.AIClient
 {
@@ -12,19 +13,17 @@ namespace API.AIClient
     public class AIClientFactory : IAIClientFactory
     {
         private readonly IServiceProvider serviceProvider;
+
         public AIClientFactory(IServiceProvider provider)
         {
             serviceProvider = provider;
         }
+
         public IAIClient CreateClient(string providerName)
         {
-            if (providerName.ToLower() == "google")
+            if (providerName != null && providerName.Equals("google", StringComparison.OrdinalIgnoreCase))
             {
                 return serviceProvider.GetRequiredService<GoogleClient>();
-            }
-            if (providerName.ToLower() == "ollamatool")
-            {
-                return serviceProvider.GetRequiredService<OllamaToolClient>();
             }
             return serviceProvider.GetRequiredService<OllamaClient>();
         }

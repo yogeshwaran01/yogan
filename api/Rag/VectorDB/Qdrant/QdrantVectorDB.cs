@@ -1,17 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
+using API.Configuration;
 
 namespace API.Rag.VectorDB.Qdrant
 {
     public class QdrantVectorDB : IVectorDB
     {
         private readonly QdrantClient qdrantClient;
+        private readonly VectorDbSettings vectorDbSettings;
 
-        public QdrantVectorDB(IConfiguration configuration)
+        public QdrantVectorDB(IOptions<VectorDbSettings> options)
         {
-            var qdrantConfig = configuration.GetSection("VectorDB:Qdrant");
-            var baseUrl = qdrantConfig["BaseUrl"];
-            var port = int.Parse(qdrantConfig["Port"]);
+            vectorDbSettings = options.Value;
+            var baseUrl = vectorDbSettings.Qdrant.BaseUrl;
+            var port = vectorDbSettings.Qdrant.Port;
             qdrantClient = new QdrantClient(baseUrl, port);
         }
 
@@ -25,9 +32,10 @@ namespace API.Rag.VectorDB.Qdrant
         {
             if (!await qdrantClient.CollectionExistsAsync(collection).ConfigureAwait(false))
             {
+                var size = vectorDbSettings.Qdrant.VectorSize;
                 await qdrantClient.CreateCollectionAsync(collection, new VectorParams
                 {
-                    Size = 768,
+                    Size = (ulong)size,
                     Distance = Distance.Cosine,
                 }).ConfigureAwait(false);
             }

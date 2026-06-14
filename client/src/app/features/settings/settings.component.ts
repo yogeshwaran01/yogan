@@ -43,13 +43,13 @@ import { StateService } from '../../core/services/state.service';
            <div class="field">
               <label for="ragToggle">RAG Mode</label>
               <div class="flex align-items-center gap-2">
-                  <p-inputSwitch id="ragToggle" [(ngModel)]="isRagEnabled" (onChange)="updateRag()"></p-inputSwitch>
+                  <p-inputSwitch id="ragToggle" [(ngModel)]="isRagEnabled"></p-inputSwitch>
                   <small>{{ isRagEnabled ? 'Enabled (Context Retrieval)' : 'Disabled (Direct Chat)' }}</small>
               </div>
            </div>
           <div class="field">
               <label for="systemPrompt">System Prompt</label>
-                 <textarea id="systemPrompt" pInputTextarea [(ngModel)]="systemPrompt" rows="5" placeholder="Add the system Prompt" class="w-full" (ngModelChange)="updateSystemPrompt()"></textarea>
+                  <textarea id="systemPrompt" pInputTextarea [(ngModel)]="systemPrompt" rows="5" placeholder="Add the system prompt..." class="w-full"></textarea>
           </div>
             <div class="field">
               <label for="client">AI Client</label>
@@ -57,7 +57,6 @@ import { StateService } from '../../core/services/state.service';
                 id="client"
                 [options]="clients"
                 [(ngModel)]="selectedClient"
-                (onChange)="updateClient()"
                 [style]="{'width':'100%'}"
               ></p-dropdown>
            </div>
@@ -68,7 +67,6 @@ import { StateService } from '../../core/services/state.service';
                 id="model"
                 [options]="models"
                 [(ngModel)]="selectedModel"
-                (onChange)="updateModel()"
                 [style]="{'width':'100%'}"
               ></p-dropdown>
            </div>
@@ -78,7 +76,6 @@ import { StateService } from '../../core/services/state.service';
               <p-dropdown
                 [options]="stores"
                 [(ngModel)]="selectedStore"
-                (onChange)="updateStore()"
                 [editable]="true"
                 placeholder="Select or create a store"
                 [style]="{'width':'100%'}"
@@ -165,26 +162,56 @@ import { StateService } from '../../core/services/state.service';
   `]
 })
 export class SettingsComponent implements OnInit {
-  models = ['llama3.1:8b', 'gemma:2b', 'dolphin-mistral']; // Could fetch from API if available
   stores: string[] = [];
-  clients = ['ollama', 'openai (Not Supported)', 'google', "ollamatool"]; // Example clients
+  textContext = '';
+  selectedFile: File | null = null;
+  isUploading = false;
 
   private aiService = inject(AiService);
   private stateService = inject(StateService);
   private messageService = inject(MessageService);
 
-  selectedModel = this.stateService.selectedModel();
-  selectedStore = this.stateService.selectedStore();
-  isRagEnabled = this.stateService.isRagEnabled();
-  selectedClient = this.stateService.selectedClient();
-  systemPrompt = this.stateService.systemPrompt();
+  get clients(): string[] {
+    return this.stateService.clients();
+  }
 
-  textContext = '';
-  selectedFile: File | null = null;
-  isUploading = false;
+  get models(): string[] {
+    return this.stateService.availableModels();
+  }
 
-  constructor() {
-    // Sync local state if signal changes externaly (optional, but good practice in constructor effects)
+  get selectedClient(): string {
+    return this.stateService.selectedClient();
+  }
+  set selectedClient(val: string) {
+    this.stateService.setClient(val);
+  }
+
+  get selectedModel(): string {
+    return this.stateService.selectedModel();
+  }
+  set selectedModel(val: string) {
+    this.stateService.setModel(val);
+  }
+
+  get selectedStore(): string {
+    return this.stateService.selectedStore();
+  }
+  set selectedStore(val: string) {
+    this.stateService.setStore(val);
+  }
+
+  get isRagEnabled(): boolean {
+    return this.stateService.isRagEnabled();
+  }
+  set isRagEnabled(val: boolean) {
+    this.stateService.setRagEnabled(val);
+  }
+
+  get systemPrompt(): string {
+    return this.stateService.systemPrompt();
+  }
+  set systemPrompt(val: string) {
+    this.stateService.setSystemPrompt(val);
   }
 
   ngOnInit() {
@@ -194,32 +221,7 @@ export class SettingsComponent implements OnInit {
   loadStores() {
     this.aiService.getStores().subscribe(stores => {
       this.stores = stores;
-      if (!this.selectedStore && this.stores.length > 0) {
-        // Optionally default to first store if none selected
-        // this.selectedStore = this.stores[0];
-        // this.updateStore();
-      }
     });
-  }
-
-  updateModel() {
-    this.stateService.setModel(this.selectedModel);
-  }
-
-  updateClient() {
-    this.stateService.setClient(this.selectedClient);
-  }
-
-  updateStore() {
-    this.stateService.setStore(this.selectedStore);
-  }
-
-  updateRag() {
-    this.stateService.setRagEnabled(this.isRagEnabled);
-  }
-
-  updateSystemPrompt() {
-    this.stateService.setSystemPrompt(this.systemPrompt);
   }
 
   addTextContext() {

@@ -10,11 +10,27 @@ export interface AIClientParam {
   StoreName?: string;
   SystemPrompt?: string;
   IsRagEnabled?: boolean;
+  ConversationId?: string;
 }
 
 export interface AIClientResponse {
   content: string;
   done: boolean;
+}
+
+export interface ChatHistoryMessage {
+  role: string;
+  content: string;
+  timestamp: string;
+}
+
+export interface BackendConfig {
+  defaultClient: string;
+  defaultModel: string;
+  defaultStoreName: string;
+  defaultSystemPrompt: string;
+  clients: string[];
+  models: Record<string, string[]>;
 }
 
 @Injectable({
@@ -91,5 +107,17 @@ export class AiService {
 
   getStores(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/stores`);
+  }
+
+  getConfig(): Observable<BackendConfig> {
+    return this.http.get<BackendConfig>(`${this.apiUrl}/config`);
+  }
+
+  getHistory(conversationId: string): Observable<ChatHistoryMessage[]> {
+    return this.http.get<ChatHistoryMessage[]>(`${this.apiUrl}/history/${conversationId}`);
+  }
+
+  clearHistory(conversationId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/history/${conversationId}`);
   }
 }
